@@ -4,7 +4,6 @@
 
 [![license][license]][license-url]
 
-
 <!-- https://open-meteo.com/ -->
 
 </div>
@@ -68,8 +67,8 @@ Don't forget to give the project a star! Thanks again!
 
 [Starter Code Download](https://static.bc-edx.com/data/dl-1-2/m14/lms/starter/Starter_Code.zip)
 
-[license]: https://img.shields.io/github/license/manc1n1/belly-button-challenge.svg?style=for-the-badge
-[license-url]: https://github.com/manc1n1/belly-button-challenge/blob/master/LICENSE
+[license]: https://img.shields.io/github/license/manc1n1/news-channel-1.svg?style=for-the-badge
+[license-url]: https://github.com/manc1n1/news-channel-1/blob/master/LICENSE
 [javascript]: https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E
 [javascript-url]: https://ecma-international.org/publications-and-standards/standards/ecma-262/
 [d3]: https://img.shields.io/badge/d3.js-F9A03C?style=for-the-badge&logo=d3.js&logoColor=white
