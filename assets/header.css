@@ -1,3 +1,22 @@
-#title {
-	color: blue;
+body,
+html {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	background-color: #1e1e2e;
+}
+
+.container {
+	display: flex;
+	justify-content: center; /* Centers items horizontally */
+	align-items: center; /* Centers items vertically */
+	height: 100%;
+}
+
+.content {
+	text-align: center;
+	padding: 20px;
+	border: 1px solid #89b4fa;
+	border-radius: 5px;
+	background-color: #313244;
 }
