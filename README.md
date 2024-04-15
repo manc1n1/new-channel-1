@@ -3,8 +3,11 @@
 # News Channel 1
 
 [![license][license]][license-url]
+[![python][python]][python-url]
 
 <!-- https://open-meteo.com/ -->
+<!-- https://dash.plotly.com/ -->
+<!-- https://www.dash-leaflet.com/ -->
 
 </div>
 
@@ -65,16 +68,10 @@ Don't forget to give the project a star! Thanks again!
 
 ## Credits
 
-[Starter Code Download](https://static.bc-edx.com/data/dl-1-2/m14/lms/starter/Starter_Code.zip)
-
 [license]: https://img.shields.io/github/license/manc1n1/news-channel-1.svg?style=for-the-badge
 [license-url]: https://github.com/manc1n1/news-channel-1/blob/master/LICENSE
-[javascript]: https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E
-[javascript-url]: https://ecma-international.org/publications-and-standards/standards/ecma-262/
-[d3]: https://img.shields.io/badge/d3.js-F9A03C?style=for-the-badge&logo=d3.js&logoColor=white
-[d3-url]: https://d3js.org/
-[plotly]: https://img.shields.io/badge/plotly-3F4F75.svg?style=for-the-badge&logo=plotly&logoColor=white
-[plotly-url]: https://plotly.com/
+[python]: https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=ffdd54
+[python-url]: https://www.python.org/
 [gmail-shield]: https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white
 [gmail-url]: mailto:mancinij1111@gmail.com
 [linkedin-shield]: https://img.shields.io/badge/linkedin-%230077B5.svg?style=for-the-badge&logo=linkedin&logoColor=white

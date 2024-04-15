@@ -2,6 +2,7 @@ from dash import Dash, dcc, html, Input, Output, callback
 from dash.exceptions import PreventUpdate
 from retry_requests import retry
 import dash_leaflet as dl
+import datetime as dt
 import openmeteo_requests
 import pandas as pd
 import requests
@@ -14,7 +15,7 @@ app.layout = html.Div(
         html.Div(
             className="container",
             children=[
-                html.H1(id="title", children="⛈️ Weather Dashboard ⛈️"),
+                html.H1(id="title", children="Weather Dashboard"),
             ],
         ),
         html.Div(
@@ -32,9 +33,22 @@ app.layout = html.Div(
                     children=[
                         dl.Map(
                             id="map",
-                            children=[dl.TileLayer()],
+                            children=[
+                                dl.TileLayer(),
+                                dl.Marker(
+                                    id="marker",
+                                    children=[dl.Popup(id="pop-up")],
+                                    position=[0, 0],
+                                ),
+                                dl.WMSTileLayer(
+                                    url="https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi",
+                                    layers="nexrad-n0r-900913",
+                                    format="image/png",
+                                    transparent=True,
+                                ),
+                            ],
                             center=[0, 0],
-                            zoom=9,
+                            zoom=10,
                             style={"height": "50vh"},
                         )
                     ],
@@ -49,6 +63,8 @@ app.layout = html.Div(
 @callback(
     [
         Output("map", "center"),
+        Output("marker", "position"),
+        Output("pop-up", "children"),
         Output("map-container", "style"),
     ],
     Input("location", "value"),
@@ -63,7 +79,26 @@ def update_output(location):
     lat = res["results"][0]["latitude"]
     lon = res["results"][0]["longitude"]
 
+    now = dt.datetime.now(dt.timezone.utc)
+
     new_center = [lat, lon]
+    new_position = [lat, lon]
+    popup_content = [
+        html.Div(
+            [
+                html.Span("Location: ", style={"font-weight": "bold"}),
+                html.Span(
+                    f"{res['results'][0]['name']}, {res['results'][0]['admin1']}, {res['results'][0]['country']}"
+                ),
+            ]
+        ),
+        html.Div(
+            [
+                html.Span("Coordinates: ", style={"font-weight": "bold"}),
+                html.Span(f"{lat}°, {lon}°"),
+            ]
+        ),
+    ]
     new_style = {
         "visibility": "visible",
     }
@@ -84,32 +119,64 @@ def update_output(location):
         "wind_speed_unit": "mph",
         "precipitation_unit": "inch",
         "timezone": "auto",
+        "forecast_days": 1,
     }
     responses = openmeteo.weather_api(forecast_url, params=params)
 
     # Process first location. Add a for-loop for multiple locations or weather models
     response = responses[0]
+    popup_content.append(
+        html.Div(
+            [
+                html.Span("Elevation: ", style={"font-weight": "bold"}),
+                html.Span(f"{response.Elevation()}m asl"),
+            ]
+        ),
+    )
 
     # Process hourly data. The order of variables needs to be the same as requested.
-    # hourly = response.Hourly()
-    # hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
-    # hourly_precipitation_probability = hourly.Variables(1).ValuesAsNumpy()
+    hourly = response.Hourly()
+    hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
+    hourly_precipitation_probability = hourly.Variables(1).ValuesAsNumpy()
 
-    # hourly_data = {
-    #     "date": pd.date_range(
-    #         start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
-    #         end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
-    #         freq=pd.Timedelta(seconds=hourly.Interval()),
-    #         inclusive="left",
-    #     )
-    # }
-    # hourly_data["temperature_2m"] = hourly_temperature_2m
-    # hourly_data["precipitation_probability"] = hourly_precipitation_probability
+    hourly_data = {
+        "date": pd.date_range(
+            start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
+            end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
+            freq=pd.Timedelta(seconds=hourly.Interval()),
+            inclusive="left",
+        )
+    }
+    hourly_data["temperature_2m"] = hourly_temperature_2m
+    hourly_data["precipitation_probability"] = hourly_precipitation_probability
 
-    # hourly_dataframe = pd.DataFrame(data=hourly_data)
-    # print(hourly_dataframe)
+    hourly_dataframe = pd.DataFrame(data=hourly_data)
 
-    return new_center, new_style
+    current_hour_data = hourly_dataframe.loc[
+        (hourly_dataframe["date"].dt.hour == now.hour)
+        & (hourly_dataframe["date"].dt.date == now.date())
+    ]
+
+    popup_content.append(
+        html.Div(
+            [
+                html.Span("Temperature: ", style={"font-weight": "bold"}),
+                html.Span(f"{current_hour_data['temperature_2m'].values[0]}ºF"),
+            ]
+        ),
+    )
+    popup_content.append(
+        html.Div(
+            [
+                html.Span("Precip. Probability: ", style={"font-weight": "bold"}),
+                html.Span(
+                    f"{current_hour_data['precipitation_probability'].values[0]}%"
+                ),
+            ]
+        ),
+    )
+
+    return new_center, new_position, popup_content, new_style
 
 
 if __name__ == "__main__":
