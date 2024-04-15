@@ -47,8 +47,32 @@ html {
 	cursor: pointer;
 }
 
-#humidity-gauge label {
+#humidity-gauge {
+	margin-top: 25px;
+	label,
+	div {
+		font-weight: bold;
+		color: #89b4fa !important;
+	}
+	.scale {
+		fill: #89b4fa !important;
+	}
+	.needle {
+		stroke: #89b4fa !important;
+	}
+	.needle-knob {
+		fill: #89b4fa !important;
+	}
+}
+
+#thermometer {
 	margin-top: 25px;
 	font-weight: bold;
-	color: #89b4fa !important;
+	.bmwtDe {
+		color: #89b4fa !important;
+	}
+	label,
+	.label {
+		color: #89b4fa !important;
+	}
 }

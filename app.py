@@ -30,6 +30,7 @@ app.layout = html.Div(
                 ),
                 html.Button("Submit", id="submit-btn"),
                 html.Div(
+                    style={"visibility": "hidden"},
                     id="map-container",
                     children=[
                         dl.Map(
@@ -53,9 +54,14 @@ app.layout = html.Div(
                             style={"height": "50vh"},
                         ),
                     ],
-                    style={"visibility": "hidden"},
                 ),
-                html.Div(id="humidity-gauge"),
+                html.Div(
+                    style={"display": "flex", "justify-content": "space-around"},
+                    children=[
+                        html.Div(id="humidity-gauge"),
+                        html.Div(id="thermometer"),
+                    ],
+                ),
             ],
         ),
     ]
@@ -69,6 +75,7 @@ app.layout = html.Div(
         Output("pop-up", "children"),
         Output("map-container", "style"),
         Output("humidity-gauge", "children"),
+        Output("thermometer", "children"),
     ],
     Input("location", "value"),
     prevent_initial_call=True,
@@ -166,16 +173,25 @@ def update_output(location):
         & (hourly_dataframe["date"].dt.date == now.date())
     ]
 
-    current_humidity = current_hour_data["relative_humidity_2m"].values[0]
     humidity_gauge = daq.Gauge(
         color={
             "gradient": True,
-            "ranges": {"green": [0, 33], "yellow": [33, 66], "red": [66, 100]},
+            "ranges": {"#a6e3a1": [0, 33], "#f9e2af": [33, 66], "#f38ba8": [66, 100]},
         },
-        value=current_humidity,
+        showCurrentValue=True,
+        value=current_hour_data["relative_humidity_2m"].values[0],
         label="Humidity (%)",
         max=100,
         min=0,
+    )
+
+    thermometer = daq.Thermometer(
+        min=-50,
+        max=150,
+        value=current_hour_data["temperature_2m"].values[0],
+        showCurrentValue=True,
+        color="#f38ba8",
+        label="Temperature (ºF)",
     )
 
     popup_content.append(
@@ -197,7 +213,14 @@ def update_output(location):
         ),
     )
 
-    return new_center, new_position, popup_content, new_style, humidity_gauge
+    return (
+        new_center,
+        new_position,
+        popup_content,
+        new_style,
+        humidity_gauge,
+        thermometer,
+    )
 
 
 if __name__ == "__main__":
