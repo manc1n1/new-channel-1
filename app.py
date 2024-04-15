@@ -26,6 +26,7 @@ app.layout = html.Div(
                     id="location",
                     type="text",
                     placeholder="City or ZIP Code",
+                    value="",
                     debounce=True,
                 ),
                 html.Button("Submit", id="submit-btn"),
@@ -56,7 +57,7 @@ app.layout = html.Div(
                     ],
                 ),
                 html.Div(
-                    style={"display": "flex", "justify-content": "space-around"},
+                    style={"display": "flex", "justifyContent": "space-around"},
                     children=[
                         html.Div(id="humidity-gauge"),
                         html.Div(id="thermometer"),
@@ -187,7 +188,7 @@ def update_output(location):
 
     thermometer = daq.Thermometer(
         min=-50,
-        max=150,
+        max=135,
         value=current_hour_data["temperature_2m"].values[0],
         showCurrentValue=True,
         color="#f38ba8",
