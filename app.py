@@ -2,6 +2,7 @@ from dash import Dash, dcc, html, Input, Output, callback
 from dash.exceptions import PreventUpdate
 from retry_requests import retry
 import dash_leaflet as dl
+import dash_daq as daq
 import datetime as dt
 import openmeteo_requests
 import pandas as pd
@@ -50,10 +51,11 @@ app.layout = html.Div(
                             center=[0, 0],
                             zoom=10,
                             style={"height": "50vh"},
-                        )
+                        ),
                     ],
                     style={"visibility": "hidden"},
                 ),
+                html.Div(id="humidity-gauge"),
             ],
         ),
     ]
@@ -66,6 +68,7 @@ app.layout = html.Div(
         Output("marker", "position"),
         Output("pop-up", "children"),
         Output("map-container", "style"),
+        Output("humidity-gauge", "children"),
     ],
     Input("location", "value"),
     prevent_initial_call=True,
@@ -114,7 +117,11 @@ def update_output(location):
     params = {
         "latitude": lat,
         "longitude": lon,
-        "hourly": ["temperature_2m", "precipitation_probability"],
+        "hourly": [
+            "temperature_2m",
+            "relative_humidity_2m",
+            "precipitation_probability",
+        ],
         "temperature_unit": "fahrenheit",
         "wind_speed_unit": "mph",
         "precipitation_unit": "inch",
@@ -137,7 +144,8 @@ def update_output(location):
     # Process hourly data. The order of variables needs to be the same as requested.
     hourly = response.Hourly()
     hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
-    hourly_precipitation_probability = hourly.Variables(1).ValuesAsNumpy()
+    hourly_relative_humidity_2m = hourly.Variables(1).ValuesAsNumpy()
+    hourly_precipitation_probability = hourly.Variables(2).ValuesAsNumpy()
 
     hourly_data = {
         "date": pd.date_range(
@@ -148,6 +156,7 @@ def update_output(location):
         )
     }
     hourly_data["temperature_2m"] = hourly_temperature_2m
+    hourly_data["relative_humidity_2m"] = hourly_relative_humidity_2m
     hourly_data["precipitation_probability"] = hourly_precipitation_probability
 
     hourly_dataframe = pd.DataFrame(data=hourly_data)
@@ -156,6 +165,18 @@ def update_output(location):
         (hourly_dataframe["date"].dt.hour == now.hour)
         & (hourly_dataframe["date"].dt.date == now.date())
     ]
+
+    current_humidity = current_hour_data["relative_humidity_2m"].values[0]
+    humidity_gauge = daq.Gauge(
+        color={
+            "gradient": True,
+            "ranges": {"green": [0, 33], "yellow": [33, 66], "red": [66, 100]},
+        },
+        value=current_humidity,
+        label="Humidity (%)",
+        max=100,
+        min=0,
+    )
 
     popup_content.append(
         html.Div(
@@ -176,7 +197,7 @@ def update_output(location):
         ),
     )
 
-    return new_center, new_position, popup_content, new_style
+    return new_center, new_position, popup_content, new_style, humidity_gauge
 
 
 if __name__ == "__main__":

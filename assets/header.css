@@ -46,3 +46,9 @@ html {
 	margin: 5px;
 	cursor: pointer;
 }
+
+#humidity-gauge label {
+	margin-top: 25px;
+	font-weight: bold;
+	color: #89b4fa !important;
+}
