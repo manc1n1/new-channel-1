@@ -48,7 +48,8 @@ html {
 	cursor: pointer;
 }
 
-#humidity-gauge {
+#humidity-gauge,
+#precip-gauge {
 	margin-top: 25px;
 	label,
 	div {
@@ -75,5 +76,17 @@ html {
 	label,
 	.label {
 		color: #89b4fa !important;
+	}
+}
+
+#compass,
+#time-series-chart {
+	margin-top: 25px;
+	font-weight: bold !important;
+	.gtitle,
+	.xtitle,
+	.ytitle {
+		font-size: 14px !important;
+		font-weight: bold !important;
 	}
 }
