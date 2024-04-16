@@ -15,9 +15,9 @@ html {
 }
 
 .content {
-	margin: 25px;
 	text-align: center;
-	padding: 20px;
+	padding: 10px;
+	margin-inline: 20px;
 	border: 1px solid #89b4fa;
 	border-radius: 5px;
 	background-color: #313244;
@@ -25,7 +25,8 @@ html {
 }
 
 #map-container {
-	margin-top: 25px;
+	margin-top: 10px;
+	margin-inline: 75px;
 }
 
 #location {

@@ -9,6 +9,9 @@ import pandas as pd
 import requests
 import requests_cache
 
+
+colorscale = ["black", "lightblue", "blue", "green", "yellow", "red", "white"]
+
 app = Dash(__name__)
 
 app.layout = html.Div(
@@ -38,6 +41,16 @@ app.layout = html.Div(
                             id="map",
                             children=[
                                 dl.TileLayer(),
+                                dl.Colorbar(
+                                    colorscale=colorscale,
+                                    width=20,
+                                    height=200,
+                                    nTicks=5,
+                                    min=0,
+                                    max=75,
+                                    unit="dBZ",
+                                    position="topright",
+                                ),
                                 dl.Marker(
                                     id="marker",
                                     children=[dl.Popup(id="pop-up")],
@@ -97,7 +110,7 @@ def update_output(location):
     popup_content = [
         html.Div(
             [
-                html.Span("Location: ", style={"font-weight": "bold"}),
+                html.Span("Location: ", style={"fontWeight": "bold"}),
                 html.Span(
                     f"{res['results'][0]['name']}, {res['results'][0]['admin1']}, {res['results'][0]['country']}"
                 ),
@@ -105,7 +118,7 @@ def update_output(location):
         ),
         html.Div(
             [
-                html.Span("Coordinates: ", style={"font-weight": "bold"}),
+                html.Span("Coordinates: ", style={"fontWeight": "bold"}),
                 html.Span(f"{lat}°, {lon}°"),
             ]
         ),
@@ -129,6 +142,8 @@ def update_output(location):
             "temperature_2m",
             "relative_humidity_2m",
             "precipitation_probability",
+            "wind_speed_10m",
+            "wind_direction_10m",
         ],
         "temperature_unit": "fahrenheit",
         "wind_speed_unit": "mph",
@@ -143,7 +158,7 @@ def update_output(location):
     popup_content.append(
         html.Div(
             [
-                html.Span("Elevation: ", style={"font-weight": "bold"}),
+                html.Span("Elevation: ", style={"fontWeight": "bold"}),
                 html.Span(f"{response.Elevation()}m asl"),
             ]
         ),
@@ -154,6 +169,8 @@ def update_output(location):
     hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
     hourly_relative_humidity_2m = hourly.Variables(1).ValuesAsNumpy()
     hourly_precipitation_probability = hourly.Variables(2).ValuesAsNumpy()
+    hourly_wind_speed_10m = hourly.Variables(3).ValuesAsNumpy()
+    hourly_wind_direction_10m = hourly.Variables(4).ValuesAsNumpy()
 
     hourly_data = {
         "date": pd.date_range(
@@ -166,8 +183,12 @@ def update_output(location):
     hourly_data["temperature_2m"] = hourly_temperature_2m
     hourly_data["relative_humidity_2m"] = hourly_relative_humidity_2m
     hourly_data["precipitation_probability"] = hourly_precipitation_probability
+    hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
+    hourly_data["wind_direction_10m"] = hourly_wind_direction_10m
 
     hourly_dataframe = pd.DataFrame(data=hourly_data)
+
+    print(hourly_dataframe)
 
     current_hour_data = hourly_dataframe.loc[
         (hourly_dataframe["date"].dt.hour == now.hour)
@@ -187,6 +208,7 @@ def update_output(location):
     )
 
     thermometer = daq.Thermometer(
+        height=160,
         min=-50,
         max=135,
         value=current_hour_data["temperature_2m"].values[0],
@@ -198,7 +220,7 @@ def update_output(location):
     popup_content.append(
         html.Div(
             [
-                html.Span("Temperature: ", style={"font-weight": "bold"}),
+                html.Span("Temperature: ", style={"fontWeight": "bold"}),
                 html.Span(f"{current_hour_data['temperature_2m'].values[0]}ºF"),
             ]
         ),
@@ -206,7 +228,7 @@ def update_output(location):
     popup_content.append(
         html.Div(
             [
-                html.Span("Precip. Probability: ", style={"font-weight": "bold"}),
+                html.Span("Precip. Probability: ", style={"fontWeight": "bold"}),
                 html.Span(
                     f"{current_hour_data['precipitation_probability'].values[0]}%"
                 ),
