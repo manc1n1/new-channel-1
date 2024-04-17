@@ -4,6 +4,7 @@ from retry_requests import retry
 import dash_leaflet as dl
 import dash_daq as daq
 import datetime as dt
+from datetime import timedelta
 import numpy as np
 import openmeteo_requests
 import pandas as pd
@@ -15,6 +16,38 @@ import requests_cache
 colorscale = ["black", "lightblue", "blue", "green", "yellow", "red", "white"]
 
 app = Dash(__name__)
+
+
+def get_local_time(latitude, longitude):
+    # Prepare the API request
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "current_weather": True,
+        "timezone": "auto",
+    }
+
+    # Send the request to Open-Meteo
+    response = requests.get(url, params=params)
+    data = response.json()
+
+    # Print the full JSON response to inspect its structure
+    # print("API Response:", data)
+
+    try:
+        # Assuming the correct key once identified from the printed response
+        time_str = data["current_weather"]["time"]
+        local_time = dt.datetime.strptime(time_str, "%Y-%m-%dT%H:%M")
+        timezone_offset_seconds = data["utc_offset_seconds"]
+        timezone_offset = timedelta(seconds=timezone_offset_seconds)
+
+        # Get the local UTC time and add the timezone offset
+        local_time = local_time - timezone_offset
+
+        return local_time
+    except KeyError as e:
+        return f"KeyError - {str(e)}: Check your data structure."
 
 
 def degrees_to_direction(degrees):
@@ -330,6 +363,13 @@ def update_output(location):
         figure=wind_direction_arrow(current_hour_data["wind_direction_10m"].values[0])
     )
 
+    local_time = get_local_time(lat, lon)
+
+    # Convert to the format expected by Plotly (milliseconds since the Unix epoch)
+    current_time_ms = int(local_time.timestamp() * 1000)
+
+    # print(current_hour_data["wind_speed_10m"].values[0])
+
     fig = px.line(
         hourly_dataframe,
         x="date",
@@ -342,12 +382,22 @@ def update_output(location):
     fig.update_layout(
         title="Wind Speed",
         title_x=0.5,
-        xaxis_title="Time (UTC)",
+        xaxis_title=f"Time",
         yaxis_title="Wind Speed (mph)",
         xaxis=dict(
             tickformat="%H:%M",
             title_font=dict(size=14),
             tickfont=dict(size=12),
+            tickvals=[
+                pd.Timestamp(d) for d in hourly_dataframe["date"]
+            ],  # Assuming df['date'] is your DataFrame column
+            ticktext=[
+                (
+                    pd.Timestamp(d)
+                    + timedelta(hours=response.UtcOffsetSeconds() / 3600)
+                ).strftime("%H:%M")
+                for d in hourly_dataframe["date"]
+            ],
         ),
         yaxis=dict(
             title_font=dict(size=14),
@@ -361,6 +411,14 @@ def update_output(location):
         height=400,
         margin={"l": 20, "r": 20, "t": 50, "b": 20},
     )
+    fig.add_vline(
+        x=current_time_ms,
+        line_width=2,
+        line_dash="dash",
+        line_color="red",
+        xref="x",
+    )
+    fig.update_xaxes(type="date")
     wind_speed_fig = dcc.Graph(figure=fig)
 
     popup_content.append(
