@@ -102,7 +102,7 @@ def wind_direction_arrow(direction_degrees, length=1):
         arrowhead=2,
         arrowsize=1,
         arrowwidth=2,
-        arrowcolor="#89b4fa",
+        arrowcolor="#f38ba8",
     )
 
     # Set plot limits and layout options
@@ -129,6 +129,19 @@ def wind_direction_arrow(direction_degrees, length=1):
     )
 
     return fig
+
+
+def format_12hr(time_str):
+    # Extract hours and minutes
+    hour, minute = map(int, time_str.split(":"))
+    # Apply modulo 12 to get the hour in 12-hour format
+    hour_12 = hour % 12
+    # Adjust hour from '0' to '12' for 12 AM and 12 PM
+    hour_12 = 12 if hour_12 == 0 else hour_12
+    # Determine AM/PM
+    am_pm = "AM" if hour < 12 else "PM"
+    # Return formatted time
+    return f"{hour_12}:{minute:02d} {am_pm}"
 
 
 app.layout = html.Div(
@@ -350,7 +363,7 @@ def update_output(location):
     )
 
     thermometer = daq.Thermometer(
-        height=160,
+        height=140,
         min=-50,
         max=135,
         value=current_hour_data["temperature_2m"].values[0],
@@ -380,7 +393,7 @@ def update_output(location):
         hovertemplate="%{y:.2f} mph",
     )
     fig.update_layout(
-        title="Wind Speed",
+        title="Wind Speed vs. Time",
         title_x=0.5,
         xaxis_title=f"Time",
         yaxis_title="Wind Speed (mph)",
@@ -392,10 +405,12 @@ def update_output(location):
                 pd.Timestamp(d) for d in hourly_dataframe["date"]
             ],  # Assuming df['date'] is your DataFrame column
             ticktext=[
-                (
-                    pd.Timestamp(d)
-                    + timedelta(hours=response.UtcOffsetSeconds() / 3600)
-                ).strftime("%H:%M")
+                format_12hr(
+                    (
+                        pd.Timestamp(d)
+                        + timedelta(hours=response.UtcOffsetSeconds() / 3600)
+                    ).strftime("%H:%M")
+                )
                 for d in hourly_dataframe["date"]
             ],
         ),
@@ -407,15 +422,21 @@ def update_output(location):
         paper_bgcolor="rgba(0,0,0,0)",
         showlegend=False,
         font=dict(family="sans-serif", color="#89b4fa"),
-        width=800,
-        height=400,
+        width=1200,
+        height=500,
         margin={"l": 20, "r": 20, "t": 50, "b": 20},
     )
     fig.add_vline(
         x=current_time_ms,
         line_width=2,
         line_dash="dash",
-        line_color="red",
+        line_color="#f38ba8",
+        annotation_text=f"",
+        annotation_position="top right",
+        annotation_font=dict(
+            color="#f38ba8",  # Set the color of the annotation text
+            size=12,  # Optionally set the size of the text
+        ),
         xref="x",
     )
     fig.update_xaxes(type="date")
