@@ -37,7 +37,7 @@
     cd news-channel-1
     ```
 
-3.  `python app.py`
+3.  `python app.py` or `python offline.py`
 
 ## Usage
 

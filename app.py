@@ -382,7 +382,7 @@ def update_output(location):
     current_time_ms = int(local_time.timestamp() * 1000)
 
     # print(current_hour_data["wind_speed_10m"].values[0])
-
+    print(hourly_dataframe)
     fig = px.line(
         hourly_dataframe,
         x="date",
@@ -428,10 +428,10 @@ def update_output(location):
     )
     fig.add_vline(
         x=current_time_ms,
-        line_width=2,
+        line_width=5,
         line_dash="dash",
         line_color="#f38ba8",
-        annotation_text=f"",
+        annotation_text=f"  Current Time",
         annotation_position="top right",
         annotation_font=dict(
             color="#f38ba8",  # Set the color of the annotation text

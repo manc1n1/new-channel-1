@@ -67,6 +67,7 @@ html {
 	}
 }
 
+#precip-thermometer,
 #thermometer {
 	margin-top: 25px;
 	font-weight: bold;
@@ -81,7 +82,7 @@ html {
 
 #compass,
 #time-series-chart {
-	margin-top: 25px;
+	margin-top: 5px;
 	font-weight: bold !important;
 	.gtitle,
 	.xtitle,
